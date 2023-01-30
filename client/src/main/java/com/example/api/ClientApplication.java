@@ -26,23 +26,58 @@ public class ClientApplication {
         this.lbFunction = lbFunction;
     }
 
+    private Mono<String> handleResponse(ClientResponse r) {
+        if (r.statusCode().is2xxSuccessful()) {
+            return r.bodyToMono(String.class);
+        }
+
+        return r.bodyToMono(String.class)
+                .switchIfEmpty(Mono.error(new IllegalStateException("Failed: " + r.statusCode())))
+                .flatMap(response -> Mono.error(new IllegalStateException("Failed: " + r.statusCode() + ", " + response)));
+    }
+
     public static void main(String[] args) {
         SpringApplication.run(ClientApplication.class, args);
     }
 
-    @RequestMapping("/hi")
-    public Mono<String> hi(@RequestParam(value = "name", defaultValue = "Mary") String name) {
-        return loadBalancedWebClientBuilder.build().get().uri("http://server/greeting")
+    @RequestMapping("/clientTasks")
+    @GetMapping("/getallTasks")
+    public Mono<String> cgetallTasks() {
+        return loadBalancedWebClientBuilder.build().get().uri("http://server/tasks/getallTasks")
                 .retrieve().bodyToMono(String.class)
-                .map(greeting -> String.format("%s, %s!", greeting, name));
+                .map(response -> String.format("%s", response));
     }
 
-    @RequestMapping("/hello")
-    public Mono<String> hello(@RequestParam(value = "name", defaultValue = "John") String name) {
-        return WebClient.builder()
-                .filter(lbFunction)
-                .build().get().uri("http://server/greeting")
+    @PostMapping("/enterTask")
+    public Mono<String> centerTask(@RequestParam(value = "task") Task task) {
+        return loadBalancedWebClientBuilder.build().post().uri("http://server/tasks/enterTask")
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .header("task", task)
+                .exchangeToMono(r -> handleResponse(r));
+    }
+
+    @GetMapping("/matchTaskByName")
+    public Mono<String> cmatchTasksByName(@RequestParam(value = "description") String name) {
+        url = String.format("http://server/tasks/matchTaskByName/name?name=%s", name);
+        return loadBalancedWebClientBuilder.build().get().uri(url)
                 .retrieve().bodyToMono(String.class)
-                .map(greeting -> String.format("%s, %s!", greeting, name));
+                .map(response -> String.format("%s", response));
+    }
+
+    @GetMapping("/matchTaskByDescription")
+    public Mono<String> cmatchTaskByDescription(@RequestParam(value = "name") String description) {
+        url = String.format("http://server/tasks/matchTaskByDescription/description?description=%s", description);
+        return loadBalancedWebClientBuilder.build().get().uri(url")
+                .retrieve().bodyToMono(String.class)
+                .map(response -> String.format("%s", response));
+    }
+
+
+    @GetMapping("/matchTasksTime")
+    public Mono<String> cmatchTasksTime(@RequestParam(value = "time") Integer time) {
+        url = String.format("http://server/tasks/matchTasksTime/time?time=%d", time);
+        return loadBalancedWebClientBuilder.build().get().uri(url")
+                .retrieve().bodyToMono(String.class)
+                .map(response -> String.format("%s", response));
     }
 }

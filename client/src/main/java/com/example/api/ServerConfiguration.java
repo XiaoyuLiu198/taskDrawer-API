@@ -11,9 +11,7 @@ import org.springframework.cloud.loadbalancer.core.ServiceInstanceListSupplier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 
-/**
- * @author Olga Maciaszek-Sharma
- */
+
 public class ServerConfiguration {
 
     @Bean
@@ -39,11 +37,11 @@ class DemoServiceInstanceListSuppler implements ServiceInstanceListSupplier {
 
     @Override
     public Flux<List<ServiceInstance>> get() {
+        return Flux.just(Arrays
+                .asList(new DefaultServiceInstance(serviceId + "1", serviceId, "localhost", 8090, false)));
+    }
+}
 //        return Flux.just(Arrays
 //                .asList(new DefaultServiceInstance(serviceId + "1", serviceId, "localhost", 8090, false),
 //                        new DefaultServiceInstance(serviceId + "2", serviceId, "localhost", 9092, false),
 //                        new DefaultServiceInstance(serviceId + "3", serviceId, "localhost", 9999, false)));
-        return Flux.just(Arrays
-                .asList(new DefaultServiceInstance(serviceId + "1", serviceId, "localhost", 8090, false));
-    }
-}
