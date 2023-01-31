@@ -14,7 +14,7 @@ The complete diagram is
 To implement the matching functionality(for example to fetch tasks which time to complete is below x days), MyBatis is appied to enable creating handlers filing custom SQL queries. 
 
 ## Load Balancer
-To ensure the scalability of this service, load balancer is applied to round out the API requests to different servers. Used spring cloud LoadBalancer and webflux to implement client-side load balancing.
+To ensure the scalability of this service, load balancer is applied to route the API requests to different servers. Used spring cloud LoadBalancer and webflux to implement client-side load balancing.
 
 └── client
 
